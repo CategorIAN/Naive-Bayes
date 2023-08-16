@@ -1,40 +1,15 @@
 from MLData import MLData
-import pandas as pd
-from functools import partial as pf
 
 class DataDictionary:
     def __init__(self):
-        self.datanames = ["Hardware", "SoyBean"]
+        self.datanames = ["SoyBean"]
 
     def dataobject(self, name):
-        data = MLData(*self.metadata(name))
-        data.one_hot()
-        data.z_score_normalize()
-        data.classes = pd.Index(list(set(data.df['Target']))) if data.classification else None
-        return data
+        return MLData(*self.metadata(name))
 
     def metadata(self, name):
-        if name == "Hardware": return self.hardware()
         if name == "SoyBean": return self.soybean()
 
-    def hardware(self):
-        name = "Hardware"
-        file = 'raw_data/machine.csv'
-        columns = [   "Vendor Name",  # For Computer Hardware
-            "Model Name",
-            "MYCT",
-            "MMIN",
-            "MMAX",
-            "CACH",
-            "CHMIN",
-            "CHMAX",
-            "PRP",  #Target
-            "ERP"
-        ]
-        target_name = 'PRP'
-        replace = None
-        classification = False
-        return (name, file, columns, target_name, replace, classification)
 
     def soybean(self):
         name = "SoyBean"
