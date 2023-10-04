@@ -9,23 +9,21 @@ class NaiveBayes:
         self.data = data
         self.seed = random.random()
 
-    def bin(self, n):
-        binned_df = copy(self.data.df)
-        for col_name in self.data.features:
+    def binned(self, n):
+        def f(col):
             try:
-                binned_df[col_name] = binned_df[col_name].apply(pd.to_numeric)
-                binned_df[col_name] = pd.qcut(binned_df[col_name].rank(method='first'), q=n, labels=np.arange(n) + 1)
+                colvalues = self.data.df[col].apply(pd.to_numeric)
+                return pd.qcut(colvalues.rank(method="first"), q=n, labels=range(n))
             except:
-                pass
-        return binned_df
+                return self.data.df[col]
+        return pd.DataFrame(dict([(col, f(col)) for col in self.data.df.columns]))
 
-    def getNoise(self):
-        df = deepcopy(self.data.df)
+    def noised(self):
         random.seed(self.seed)
         noise_features = random.sample(self.data.features, k=math.ceil(len(self.data.features) * .1))
-        for feature in noise_features:
-            df[feature] = pd.Series(np.random.permutation(df[feature]))
-        return pd.DataFrame(df)
+        def f(col):
+            return pd.Series(np.random.permutation(self.data.df[col])) if col in noise_features else self.data.df[col]
+        return pd.DataFrame(dict([(col, f(col)) for col in self.data.df.columns]))
 
     def partition(self, k):
         n = self.data.df.shape[0]
