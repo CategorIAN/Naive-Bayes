@@ -6,6 +6,7 @@ def f(i):
         DD = DataDictionary()
         data = DD.dataobject("SoyBean")
         data.df.to_csv("data.csv")
+        """
         NB = NaiveBayes(data)
         binned = NB.bin(5)
         binned.to_csv("binned_data.csv")
@@ -16,6 +17,7 @@ def f(i):
         print(NB.test_set)
         print("===================================")
         print(NB.getQ())
+        """
 
 if __name__ == '__main__':
     f(1)
