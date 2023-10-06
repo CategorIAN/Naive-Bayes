@@ -8,9 +8,9 @@ def f(i):
         data.df.to_csv("data.csv")
         """
         NB = NaiveBayes(data)
-        binned = NB.bin(5)
+        binned = NB.binned(5)
         binned.to_csv("binned_data.csv")
-        noised = NB.getNoise()
+        noised = NB.noised()
         noised.to_csv("noisy_data.csv")
         print(NB.partition(10))
         NB.training_test_sets(1, NB.data.df)

@@ -3,41 +3,35 @@ import numpy as np
 from copy import copy, deepcopy
 import random
 import math
+from functools import reduce
 
 class NaiveBayes:
     def __init__(self, data):
         self.data = data
         self.seed = random.random()
 
-    def bin(self, n):
-        binned_df = copy(self.data.df)
-        for col_name in self.data.features:
+    def binned(self, n):
+        def f(col):
             try:
-                binned_df[col_name] = binned_df[col_name].apply(pd.to_numeric)
-                binned_df[col_name] = pd.qcut(binned_df[col_name].rank(method='first'), q=n, labels=np.arange(n) + 1)
+                colvalues = self.data.df[col].apply(pd.to_numeric)
+                return pd.qcut(colvalues.rank(method="first"), q=n, labels=range(n))
             except:
-                pass
-        return binned_df
+                return self.data.df[col]
+        return pd.DataFrame(dict([(col, f(col)) for col in self.data.df.columns]))
 
-    def getNoise(self):
-        df = deepcopy(self.data.df)
+    def noised(self):
         random.seed(self.seed)
         noise_features = random.sample(self.data.features, k=math.ceil(len(self.data.features) * .1))
-        for feature in noise_features:
-            df[feature] = pd.Series(np.random.permutation(df[feature]))
-        return pd.DataFrame(df)
+        def f(col):
+            return pd.Series(np.random.permutation(self.data.df[col])) if col in noise_features else self.data.df[col]
+        return pd.DataFrame(dict([(col, f(col)) for col in self.data.df.columns]))
 
     def partition(self, k):
         n = self.data.df.shape[0]
         (q, r) = (n // k, n % k)
-        (p, j) = ([], 0)
-        for i in range(r):
-            p.append(list(range(j, j + q + 1)))
-            j += q + 1
-        for i in range(r, k):
-            p.append(list(range(j, j + q)))
-            j += q
-        return p
+        def f(i, j, p):
+            return p if i == k else f(i + 1, j + q + int(i < r), p + [list(range(j, j + q + int(i < r)))])
+        return f(0, 0, [])
 
     def training_test_sets(self, j, df, partition=None):
         if partition is None: partition = self.partition(10)
@@ -49,6 +43,13 @@ class NaiveBayes:
                 test = partition[i]
         self.train_set = df.filter(items=train, axis=0)
         self.test_set = df.filter(items=test, axis=0)
+
+    def training_test_dicts(self, df, partition=None):
+        partition = self.partition(10) if partition is None else partition
+        train_index = lambda i: reduce(lambda l1, l2: l1 + l2, partition[:i] + partition[i + 1:])
+        test_dict = dict([(i, df.filter(items=partition[i], axis=0)) for i in range(len(partition))])
+        train_dict = dict([(i, df.filter(items=train_index(i))) for i in range(len(partition))])
+        return (train_dict, test_dict)
 
     def getQ(self):
         df = pd.DataFrame(self.train_set.groupby(by = ["Class"])["Class"].agg('count')).rename(columns =
