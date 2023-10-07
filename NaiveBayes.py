@@ -48,22 +48,30 @@ class NaiveBayes:
         partition = self.partition(10) if partition is None else partition
         train_index = lambda i: reduce(lambda l1, l2: l1 + l2, partition[:i] + partition[i + 1:])
         test_dict = dict([(i, df.filter(items=partition[i], axis=0)) for i in range(len(partition))])
-        train_dict = dict([(i, df.filter(items=train_index(i))) for i in range(len(partition))])
+        train_dict = dict([(i, df.filter(items=train_index(i), axis=0)) for i in range(len(partition))])
         return (train_dict, test_dict)
 
-    def getQ(self):
-        df = pd.DataFrame(self.train_set.groupby(by = ["Class"])["Class"].agg('count')).rename(columns =
-                                                                                               {"Class": "Count"})
-        df["Q"] = df["Count"].apply(lambda x: x / self.train_set.shape[0])
-        return df
+    def getQ(self, train_dict = None):
+        train_dict = self.training_test_dicts(self.data.df)[0] if train_dict is None else train_dict
+        def f(i):
+            train = train_dict[i]
+            df = pd.DataFrame(train.groupby(by = ["Class"])["Class"].agg("count")).rename(columns={"Class": "Count"})
+            return pd.concat([df, pd.Series(df["Count"] / train.shape[0], name="Q")], axis=1)
+        return f
 
 
-    def getF(self, j, m, p, Qtrain=None):
-        if Qtrain is None: Qtrain = self.getQ()
-        df = pd.DataFrame(self.train_set.groupby(by=["Class", self.data.features[j]])["Class"].agg("count")).rename(
-            columns={"Class": "Count"})
-        y = []
-        for ((cl, _), count) in df["Count"].to_dict().items():
-            y.append((count + 1 + m * p) / (Qtrain.at[cl, "Count"] + len(self.data.features) + m))
-        df['F'] = y
-        return df
+    def getF(self, j, m, p, train_dict = None):
+        def f(i):
+            Qtrain = self.getQ(train_dict)(i)
+            df = pd.DataFrame(self.train_set.groupby(by=["Class", self.data.features[j]])["Class"].agg("count")).rename(
+                columns={"Class": "Count"})
+            y = []
+            for ((cl, _), count) in df["Count"].to_dict().items():
+                y.append((count + 1 + m * p) / (Qtrain.at[cl, "Count"] + len(self.data.features) + m))
+            print(y)
+            #df['F'] = y
+            #return df
+            F = df.index.to_series().map(lambda t: (df["Count"][t] + 1 + m * p) /
+                                                   (Qtrain.at[t[0], "Count"] + len(self.data.features) + m))
+            return pd.concat([df, pd.Series(F, name = "F")], axis = 1)
+        return f
