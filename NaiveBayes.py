@@ -4,6 +4,7 @@ from copy import copy, deepcopy
 import random
 import math
 from functools import reduce
+from itertools import product
 
 class NaiveBayes:
     def __init__(self, data):
@@ -60,18 +61,31 @@ class NaiveBayes:
         return f
 
 
-    def getF(self, j, m, p, train_dict = None):
+    def getF(self, m, p, train_dict = None):
+        #m is the number of pseudo-examples. p is the probability of the pseudo example occurs.
+        train_dict = self.training_test_dicts(self.data.df)[0] if train_dict is None else train_dict
         def f(i):
-            Qtrain = self.getQ(train_dict)(i)
-            df = pd.DataFrame(self.train_set.groupby(by=["Class", self.data.features[j]])["Class"].agg("count")).rename(
-                columns={"Class": "Count"})
-            y = []
-            for ((cl, _), count) in df["Count"].to_dict().items():
-                y.append((count + 1 + m * p) / (Qtrain.at[cl, "Count"] + len(self.data.features) + m))
-            print(y)
-            #df['F'] = y
-            #return df
-            F = df.index.to_series().map(lambda t: (df["Count"][t] + 1 + m * p) /
-                                                   (Qtrain.at[t[0], "Count"] + len(self.data.features) + m))
-            return pd.concat([df, pd.Series(F, name = "F")], axis = 1)
+            def g(j):
+                QFrame = self.getQ(train_dict)(i)
+                train = train_dict[i]
+                df = pd.DataFrame(train.groupby(by=["Class", self.data.features[j]])["Class"].agg("count")).rename(
+                    columns={"Class": "Count"})
+                F = df.index.to_series().map(lambda t: (df["Count"][t] + 1 + m * p) /
+                                                       (QFrame.at[t[0], "Count"] + len(self.data.features) + m))
+                return pd.concat([df, pd.Series(F, name = "F")], axis = 1)
+            return g
         return f
+
+    def getFs(self, m, p, train_dict = None):
+        F_func = self.getF(m, p, train_dict)
+        return lambda i: dict([(j, F_func(i)(j)) for j in range(len(self.data.features))])
+
+    def value(self, df):
+        return lambda i: df.loc[i, self.data.features]
+
+    def C(self, Qframe, Fframes):
+        def f(cl, x):
+            return reduce(lambda r, j: r * Fframes[j].to_dict()["F"].get((cl, x[j]), 0),
+                          range(len(self.data.features)), Qframe.at[cl, "Q"])
+        return f
+

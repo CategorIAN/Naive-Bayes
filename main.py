@@ -15,7 +15,15 @@ def f(i):
         traind, testd = NB.training_test_dicts(NB.data.df)
         #print(traind[0])
         print("===================================")
-        print(NB.getF()(0))
+        Fs = NB.getFs(5, 0.03)(0)
+        Q = NB.getQ()(0)
+        for j in Fs.keys():
+            print(j)
+            print("-------")
+            print(Fs[j])
+        x = NB.value(data.df)(5)
+        print(x)
+        print(NB.C(Q, Fs)("D1", x))
 
 if __name__ == '__main__':
     f(1)
