@@ -34,17 +34,6 @@ class NaiveBayes:
             return p if i == k else f(i + 1, j + q + int(i < r), p + [list(range(j, j + q + int(i < r)))])
         return f(0, 0, [])
 
-    def training_test_sets(self, j, df, partition=None):
-        if partition is None: partition = self.partition(10)
-        train = []
-        for i in range(len(partition)):
-            if j != i:
-                train += partition[i]
-            else:
-                test = partition[i]
-        self.train_set = df.filter(items=train, axis=0)
-        self.test_set = df.filter(items=test, axis=0)
-
     def training_test_dicts(self, df, partition=None):
         partition = self.partition(10) if partition is None else partition
         train_index = lambda i: reduce(lambda l1, l2: l1 + l2, partition[:i] + partition[i + 1:])
@@ -52,33 +41,27 @@ class NaiveBayes:
         train_dict = dict([(i, df.filter(items=train_index(i), axis=0)) for i in range(len(partition))])
         return (train_dict, test_dict)
 
-    def getQ(self, train_dict = None):
-        train_dict = self.training_test_dicts(self.data.df)[0] if train_dict is None else train_dict
-        def f(i):
-            train = train_dict[i]
-            df = pd.DataFrame(train.groupby(by = ["Class"])["Class"].agg("count")).rename(columns={"Class": "Count"})
-            return pd.concat([df, pd.Series(df["Count"] / train.shape[0], name="Q")], axis=1)
-        return f
+    def getQ(self, df = None):
+        df = self.data.df if df is None else df
+        Q = pd.DataFrame(df.groupby(by=["Class"])["Class"].agg("count")).rename(columns={"Class": "Count"})
+        return pd.concat([Q, pd.Series(Q["Count"] / df.shape[0], name="Q")], axis=1)
 
 
-    def getF(self, m, p, train_dict = None):
-        #m is the number of pseudo-examples. p is the probability of the pseudo example occurs.
-        train_dict = self.training_test_dicts(self.data.df)[0] if train_dict is None else train_dict
-        def f(i):
-            def g(j):
-                QFrame = self.getQ(train_dict)(i)
-                train = train_dict[i]
-                df = pd.DataFrame(train.groupby(by=["Class", self.data.features[j]])["Class"].agg("count")).rename(
-                    columns={"Class": "Count"})
-                F = df.index.to_series().map(lambda t: (df["Count"][t] + 1 + m * p) /
-                                                       (QFrame.at[t[0], "Count"] + len(self.data.features) + m))
-                return pd.concat([df, pd.Series(F, name = "F")], axis = 1)
-            return g
-        return f
+    def getF(self, m, p, df = None):
+        #m is the number of pseudo-examples. p is the probability that the pseudo example occurs.
+        df = self.data.df if df is None else df
+        def g(j):
+            Qframe = self.getQ(df)
+            Fframe = pd.DataFrame(df.groupby(by=["Class", self.data.features[j]])["Class"].agg("count")).rename(
+                columns={"Class": "Count"})
+            Fcol = Fframe.index.to_series().map(lambda t: (Fframe["Count"][t] + 1 + m * p) /
+                                                   (Qframe.at[t[0], "Count"] + len(self.data.features) + m))
+            return pd.concat([Fframe, pd.Series(Fcol, name = "F")], axis = 1)
+        return g
 
-    def getFs(self, m, p, train_dict = None):
-        F_func = self.getF(m, p, train_dict)
-        return lambda i: dict([(j, F_func(i)(j)) for j in range(len(self.data.features))])
+    def getFs(self, m, p, df = None):
+        F_func = self.getF(m, p, df)
+        return dict([(j, F_func(j)) for j in range(len(self.data.features))])
 
     def value(self, df):
         return lambda i: df.loc[i, self.data.features]
@@ -87,5 +70,12 @@ class NaiveBayes:
         def f(cl, x):
             return reduce(lambda r, j: r * Fframes[j].to_dict()["F"].get((cl, x[j]), 0),
                           range(len(self.data.features)), Qframe.at[cl, "Q"])
+        return f
+
+    def predicted_class(self, Qframe, Fframes):
+        C_func = self.C(Qframe, Fframes)
+        def f(x):
+            cl_prob = Qframe.index.map(lambda cl: (cl, C_func(cl, x)))
+            return reduce(lambda t1, t2: t2 if t1[0] is None or t2[1] > t1[1] else t1, cl_prob, (None, None))[0]
         return f
 
