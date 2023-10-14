@@ -11,14 +11,14 @@ class NaiveBayes:
         self.data = data
         self.seed = random.random()
 
-    def binned(self, n):
+    def binned(self, df, n):
         def f(col):
             try:
-                colvalues = self.data.df[col].apply(pd.to_numeric)
+                colvalues = df[col].apply(pd.to_numeric)
                 return pd.qcut(colvalues.rank(method="first"), q=n, labels=range(n))
             except:
-                return self.data.df[col]
-        return pd.DataFrame(dict([(col, f(col)) for col in self.data.df.columns]))
+                return df[col]
+        return pd.DataFrame(dict([(col, f(col)) for col in df.columns]))
 
     def noised(self):
         random.seed(self.seed)

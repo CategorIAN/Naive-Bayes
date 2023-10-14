@@ -1,5 +1,6 @@
 from DataDictionary import DataDictionary
 from NaiveBayes import NaiveBayes
+from CrossValidation import CrossValidation as CV
 
 def f(i):
     if i == 1:
@@ -34,7 +35,14 @@ def f(i):
         Q = NB.getQ(traind[0])
         x = NB.value(binned)(5)
         print(NB.predicted_class(Q, Fs)(x))
+    if i == 3:
+        DD = DataDictionary()
+        data = DD.dataobject("SoyBean")
+        X = CV(data)
+        X.test([11, 12], [.001, .002], [24, 25])
+
+
 
 if __name__ == '__main__':
-    f(2)
+    f(3)
 
