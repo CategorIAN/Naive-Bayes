@@ -32,7 +32,7 @@ class NaiveBayes:
         F_func = self.getF(df, p, m, Qframe)
         return dict([(j, F_func(j)) for j in range(len(self.data.features))])
 
-    def C(self, df, p, m, Qframe):
+    def class_prob(self, df, p, m, Qframe):
         Fframes = self.getFs(df, p, m, Qframe)
         def f(cl, x):
             return reduce(lambda r, j: r * Fframes[j].to_dict()["F"].get((cl, x[j]), 0),
@@ -41,10 +41,10 @@ class NaiveBayes:
 
     def predicted_class(self, df, p, m):
         Qframe = self.getQ(df)
-        C_func = self.C(df, p, m, Qframe)
+        class_prob_func = self.class_prob(df, p, m, Qframe)
         def f(x):
-            cl_prob = Qframe.index.map(lambda cl: (cl, C_func(cl, x)))
-            return reduce(lambda t1, t2: t2 if t1[0] is None or t2[1] > t1[1] else t1, cl_prob, (None, None))[0]
+            cl_probs = Qframe.index.map(lambda cl: (cl, class_prob_func(cl, x)))
+            return reduce(lambda t1, t2: t2 if t1[0] is None or t2[1] > t1[1] else t1, cl_probs, (None, None))[0]
         return f
 
     def value(self, df):
