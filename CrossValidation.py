@@ -28,36 +28,19 @@ class CrossValidation:
         return sum(predicted.to_numpy() != actual.to_numpy()) / len(predicted)
 
     def getErrorDf(self, train_dict, bin_numbers, p_vals, m_vals):
-        def error(i):
-            (f, b, p, m) = my_space[i]
+        def error(f, b, p, m):
             binned_df = self.nb.binned(train_dict[f], b)
-            Qframe = self.nb.getQ(binned_df)
-            Fframe = self.nb.getFs(m, p, binned_df)
-            pred_class = self.nb.predicted_class(Qframe, Fframe)
+            pred_class = self.nb.predicted_class(binned_df, p, m)
             predicted_classes = binned_df.index.map(lambda i: pred_class(self.nb.value(binned_df)(i)))
             actual_classes = binned_df.index.map(self.nb.target)
             return self.zero_one_loss(predicted_classes, actual_classes)
 
         start_time = time.time()
         folds = pd.Index(range(10))
-        my_space = pd.Series(product(folds, bin_numbers, p_vals, m_vals))
-        print(my_space)
-        output_col_titles = ["Error"]
-        df_size = len(my_space)
-        cols = list(zip(*my_space))
-        col_titles = ["Fold", "Bin Number", "p_val", "m_val"]
-        data = zip(col_titles, cols)
+        my_space = pd.Series(product(folds, bin_numbers, p_vals, m_vals)).map(lambda hyps: hyps + (error(*hyps),))
+        col_titles = ["Fold", "Bin Number", "p_val", "m_val", "Error"]
         error_df = pd.DataFrame.from_dict(data = dict(my_space), orient = "index", columns = col_titles)
-
-        for title in output_col_titles:
-            error_df[title] = df_size * [None]
-        tuples = pd.Series(range(df_size)).map(error).values
-        output_cols = [tuples]
-        output_data = zip(output_col_titles, output_cols)
-        for (title, col) in output_data:
-            error_df[title] = col
-        """
-        error_df.to_csv(os.getcwd() + '\\' + str(self.data) + '\\' + "{}_Hyps.csv".format(str(self.data)))
+        error_df.to_csv("\\".join([os.getcwd(), str(self.data), "{}_Error.csv".format(str(self.data))]))
         print("Time Elapsed: {} Seconds".format(time.time() - start_time))
         return error_df
 
