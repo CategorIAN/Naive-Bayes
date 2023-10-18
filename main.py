@@ -7,7 +7,7 @@ def f(i):
         DD = DataDictionary()
         data = DD.dataobject("SoyBean")
         X = CV(data)
-        X.test([11], [1], [100])
+        print(X.best_params([11, 50], [.001, 1], [24, 100]))
 
 
 
