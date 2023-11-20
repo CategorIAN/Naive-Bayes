@@ -6,8 +6,9 @@ def f(i):
     if i == 3:
         DD = DataDictionary()
         data = DD.dataobject("SoyBean")
-        X = CV(data)
-        print(X.best_params([11, 50], [.001, 1], [24, 100]))
+        print(len(data.df.columns))
+        #X = CV(data)
+        #print(X.best_params([11, 50], [.001, 1], [24, 100]))
 
 
 
