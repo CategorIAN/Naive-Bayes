@@ -1,24 +1,51 @@
 import pandas as pd
-import numpy as np
-import os
-from copy import copy
+from dataclasses import dataclass
+from pathlib import Path
+import yaml
 
-class MLData:
-    def __init__(self, name, data_loc, columns, target_name, replace, classification):
-        self.name = name
-        self.data_loc = data_loc
-        self.df = pd.read_csv(self.data_loc, header=None)
-        self.columns = columns
-        self.df.columns = self.columns
-        self.target_name = target_name
-        target_column = self.df.pop(self.target_name)
-        self.features = list(self.df.columns)
-        self.df.insert(len(self.df.columns), "Class", target_column)
-        self.replace = replace
-        self.classification = classification
-        self.classes = pd.Index(list(set(self.df["Class"]))) if self.classification else None
 
-    def __str__(self):
-        return self.name
+@dataclass(frozen=True)
+class Dataset:
+    name: str
+    X: pd.DataFrame
+    y: pd.Series
+    task_type: str
+    classes: pd.Index | None = None
+
+
+def load_data(name: str) -> pd.DataFrame:
+    return pd.read_csv(Path("data_raw") / f"{name}.csv", header=None)
+
+
+def load_meta(name: str) -> dict:
+    path = Path("metadata") / f"{name}.yaml"
+    with path.open("r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+def split_data(df: pd.DataFrame, target: str) -> tuple[pd.DataFrame, pd.Series]:
+    X = df.drop(columns = [target])
+    y = df[target]
+    return X, y
+
+
+def get_data(name: str) -> Dataset:
+    data = load_data(name)
+    meta = load_meta(name)
+    data = data.set_axis(meta["columns"], axis=1)
+    if meta["replace_value"] in meta:
+        data = data.fillna(meta["replace_value"])
+    data.to_csv(f"data_processed/{name}.csv", index=False)
+    X, y = split_data(data, meta["target_name"])
+    classes = pd.Index(y.unique()) if meta["task_type"] == "classification" else None
+
+    return Dataset(
+        name=name,
+        X=X,
+        y=y,
+        task_type=meta["task_type"],
+        classes=classes
+    )
+
 
 
