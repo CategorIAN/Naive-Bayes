@@ -1,36 +1,37 @@
 import pandas as pd
 from functools import reduce
+from MLData import Dataset
 
-class NaiveBayes:
-    def __init__(self, data):
-        self.data = data
 
-    def binned(self, df, b):
-        def f(col):
-            try:
-                colvalues = df[col].apply(pd.to_numeric)
-                return pd.qcut(colvalues.rank(method="first"), q=b, labels=range(n))
-            except:
-                return df[col]
-        return pd.DataFrame(dict([(col, f(col)) for col in df.columns]))
+def binned(df: pd.DataFrame, n: int) -> pd.DataFrame:
+    def f(col):
+        try:
+            colvalues = pd.to_numeric(df[col])
+            return pd.qcut(colvalues.rank(method="first"), q=n, labels=range(n))
+        except (ValueError, TypeError):
+            return df[col]
+    return pd.DataFrame({col: f(col) for col in df.columns})
 
-    def getQ(self, df):
-        Q = pd.DataFrame(df.groupby(by=["Class"])["Class"].agg("count")).rename(columns={"Class": "Count"})
-        return pd.concat([Q, pd.Series(Q["Count"] / df.shape[0], name="Q")], axis=1)
 
-    def getF(self, df, p, m, Qframe):
-        #m is the number of pseudo-examples. p is the probability that the pseudo example occurs.
+def merge(n: int):
+    def f(data: Dataset) -> pd.DataFrame:
+        binned_features = binned(data.X, n)
+        return pd.concat([binned_features, data.y], axis=1)
+    return f
+
+
+def getQ(y: pd.Series) -> pd.DataFrame:
+    counts = y.value_counts().rename("Count")
+    return counts.to_frame().assign(Q=lambda df: df["Count"] / df["Count"].sum())
+
+
+def getF(m: int):
+    def f(df: pd.DataFrame, feats: [str], Q: pd.DataFrame) -> dict[int, pd.DataFrame]:
         def g(j):
-            Fframe = pd.DataFrame(df.groupby(by=["Class", self.data.features[j]])["Class"].agg("count")).rename(
-                columns={"Class": "Count"})
-            Fcol = Fframe.index.to_series().map(lambda t: (Fframe["Count"][t] + 1 + m * p) /
-                                                   (Qframe.at[t[0], "Count"] + len(self.data.features) + m))
-            return pd.concat([Fframe, pd.Series(Fcol, name = "F")], axis = 1)
-        return g
-
-    def getFs(self, df, p, m, Qframe):
-        F_func = self.getF(df, p, m, Qframe)
-        return dict([(j, F_func(j)) for j in range(len(self.data.features))])
+            F = pd.DataFrame(df.groupby(by=["Class", feats[j]])["Class"].count()).rename(columns={"Class": "Count"})
+            vals = F.index.to_series().map(lambda t: (F["Count"][t] + 1) / (Q.at[t[0], "Count"] + m))
+            return pd.concat([F, pd.Series(vals, name = "F")], axis=1)
+        return dict([(j, g(j)) for j in range(len(feats))])
 
     def class_prob(self, df, p, m, Qframe):
         Fframes = self.getFs(df, p, m, Qframe)

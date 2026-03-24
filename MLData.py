@@ -25,7 +25,7 @@ def load_meta(name: str) -> dict:
 
 def split_data(df: pd.DataFrame, target: str) -> tuple[pd.DataFrame, pd.Series]:
     X = df.drop(columns = [target])
-    y = df[target]
+    y = df[target].rename("Class")
     return X, y
 
 
