@@ -61,5 +61,11 @@ class CrossValidation:
         best_row = analysis_df.loc[lambda df: df["Error"] == analysis_df["Error"].min()].iloc[0]
         return best_row
 
+    def value(self, df):
+        return lambda i: df.loc[i, self.data.features]
+
+    def target(self, i):
+        return self.data.df.at[i, "Class"]
+
 
 
