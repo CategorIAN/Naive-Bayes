@@ -12,6 +12,18 @@ class Dataset:
     task_type: str
     classes: pd.Index | None = None
 
+    def df(self) -> pd.DataFrame:
+        return pd.concat([self.X, self.y], axis=1)
+
+    def map(self, f):
+        return Dataset(
+            name=self.name,
+            X=f(self.X),
+            y=self.y,
+            task_type=self.task_type,
+            classes=self.classes,
+        )
+
 
 def load_data(name: str) -> pd.DataFrame:
     return pd.read_csv(Path("data_raw") / f"{name}.csv", header=None)

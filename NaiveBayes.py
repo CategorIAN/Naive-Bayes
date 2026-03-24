@@ -1,56 +1,65 @@
 import pandas as pd
 from functools import reduce
 from MLData import Dataset
+from dataclasses import dataclass
 
 
-def binned(df: pd.DataFrame, n: int) -> pd.DataFrame:
-    def f(col):
-        try:
-            colvalues = pd.to_numeric(df[col])
-            return pd.qcut(colvalues.rank(method="first"), q=n, labels=range(n))
-        except (ValueError, TypeError):
-            return df[col]
-    return pd.DataFrame({col: f(col) for col in df.columns})
+@dataclass(frozen=True)
+class NaiveBayes:
+    n: int # Bin Size
+    alpha: float # Smoothing Parameter
 
+    def binned(self, df: pd.DataFrame) -> pd.DataFrame:
+        def g(col: str) -> pd.Series:
+            try:
+                colvalues = pd.to_numeric(df[col])
+                return pd.qcut(colvalues.rank(method="first"), q=self.n, labels=range(self.n))
+            except (ValueError, TypeError):
+                return df[col]
+        return pd.DataFrame({col: g(col) for col in df.columns})
 
-def merge(n: int):
-    def f(data: Dataset) -> pd.DataFrame:
-        binned_features = binned(data.X, n)
-        return pd.concat([binned_features, data.y], axis=1)
+    @staticmethod
+    def getQ(data: Dataset) -> pd.DataFrame:
+        y = data.y
+        counts = y.value_counts().rename("Count")
+        return counts.to_frame().assign(Q=lambda df: df["Count"] / df["Count"].sum())
+
+    def getFmap(self, data: Dataset, Q: pd.DataFrame) -> dict[int, pd.DataFrame]:
+        df = data.df()
+        feats = data.X.columns
+
+        def f(j: int) -> pd.DataFrame:
+            feat = feats[j]
+            counts = (
+                df.groupby(["Class", feat])
+                  .size()
+                  .rename("Count")
+            )
+            full_index = pd.MultiIndex.from_product(
+                [data.classes, range(self.n)],
+                names=["Class", feat]
+            )
+            F = counts.reindex(full_index, fill_value=0).to_frame()
+            F["F"] = F.index.to_series().map(
+                lambda t: (F.at[t, "Count"] + self.alpha) / (Q.at[t[0], "Count"] + self.alpha * self.n)
+            )
+            return F
+        return {j: f(j) for j in range(len(feats))}
+
+    def class_prob(self, Q: pd.DataFrame, Fmap: dict[int, pd.DataFrame]):
+        return lambda x, cl: reduce(lambda r, j: r * Fmap[j][cl, x[j]], range(len(x)), Q.at[cl, "Q"])
+
+def predicted_class(self, df, p, m):
+    Qframe = self.getQ(df)
+    class_prob_func = self.class_prob(df, p, m, Qframe)
+    def f(x):
+        cl_probs = Qframe.index.map(lambda cl: (cl, class_prob_func(cl, x)))
+        return reduce(lambda t1, t2: t2 if t1[0] is None or t2[1] > t1[1] else t1, cl_probs, (None, None))[0]
     return f
 
+def value(self, df):
+    return lambda i: df.loc[i, self.data.features]
 
-def getQ(y: pd.Series) -> pd.DataFrame:
-    counts = y.value_counts().rename("Count")
-    return counts.to_frame().assign(Q=lambda df: df["Count"] / df["Count"].sum())
-
-
-def getF(m: int):
-    def f(df: pd.DataFrame, feats: [str], Q: pd.DataFrame) -> dict[int, pd.DataFrame]:
-        def g(j):
-            F = pd.DataFrame(df.groupby(by=["Class", feats[j]])["Class"].count()).rename(columns={"Class": "Count"})
-            vals = F.index.to_series().map(lambda t: (F["Count"][t] + 1) / (Q.at[t[0], "Count"] + m))
-            return pd.concat([F, pd.Series(vals, name = "F")], axis=1)
-        return dict([(j, g(j)) for j in range(len(feats))])
-
-    def class_prob(self, df, p, m, Qframe):
-        Fframes = self.getFs(df, p, m, Qframe)
-        def f(cl, x):
-            return reduce(lambda r, j: r * Fframes[j].to_dict()["F"].get((cl, x[j]), 0),
-                          range(len(self.data.features)), Qframe.at[cl, "Q"])
-        return f
-
-    def predicted_class(self, df, p, m):
-        Qframe = self.getQ(df)
-        class_prob_func = self.class_prob(df, p, m, Qframe)
-        def f(x):
-            cl_probs = Qframe.index.map(lambda cl: (cl, class_prob_func(cl, x)))
-            return reduce(lambda t1, t2: t2 if t1[0] is None or t2[1] > t1[1] else t1, cl_probs, (None, None))[0]
-        return f
-
-    def value(self, df):
-        return lambda i: df.loc[i, self.data.features]
-
-    def target(self, i):
-        return self.data.df.at[i, "Class"]
+def target(self, i):
+    return self.data.df.at[i, "Class"]
 
