@@ -1,5 +1,5 @@
 import pandas as pd
-from functools import reduce
+from functools import reduce, partial
 from MLData import Dataset
 from dataclasses import dataclass
 
@@ -8,7 +8,6 @@ from dataclasses import dataclass
 class NaiveBayes:
     n: int # Bin Size
     alpha: float # Smoothing Parameter
-
 
     def binned(self, data: Dataset) -> Dataset:
         def g(df: pd.DataFrame, col: str) -> pd.Series:
@@ -30,8 +29,7 @@ class NaiveBayes:
         df = data.df()
         feats = data.X.columns
 
-        def f(j: int) -> pd.DataFrame:
-            feat = feats[j]
+        def f(feat: str) -> pd.DataFrame:
             counts = (
                 df.groupby(["Class", feat])
                   .size()
@@ -46,14 +44,22 @@ class NaiveBayes:
                 lambda t: (F.at[t, "Count"] + self.alpha) / (Q.at[t[0], "Count"] + self.alpha * self.n)
             )
             return F
-        return {j: f(j) for j in range(len(feats))}
+        return {feat: f(feat) for feat in feats}
 
-    def predicted_class(self, Q: pd.DataFrame, Fmap: dict[int, pd.DataFrame]):
-        class_prob = lambda cl, x: reduce(lambda r, j: r * Fmap[j][cl, x[j]], range(len(x)), Q.at[cl, "Q"])
+    def predict(self, Q, Fmap, x):
+        class_prob = lambda cl, x: reduce(
+            lambda r, feat: r * Fmap[feat].at[(cl, x[feat]), "F"],
+            x.index,
+            Q.at[cl, "Q"]
+        )
+        cl_probs = [(cl, class_prob(cl, x)) for cl in Q.index]
+        return max(cl_probs, key=lambda t: t[1])[0]
 
-        def f(x):
-            cl_probs = [(cl, class_prob(cl, x)) for cl in Q.index]
-            return reduce(lambda t1, t2: t2 if t1[0] is t2[1] > t1[1] else t1, cl_probs[1:], cl_probs[0])[0]
-        return f
+    def __call__(self, data: Dataset):
+        binned_data = self.binned(data)
+        Q = self.getQ(binned_data)
+        Fmap = self.getFmap(Q, binned_data)
+        return partial(self.predict, Q, Fmap)
+
 
 
