@@ -4,28 +4,32 @@ import os
 from itertools import product
 import time
 from NaiveBayes import NaiveBayes
+from dataclasses import dataclass
+from MLData import Dataset
+from Error import zero_one_loss
 
+@dataclass(frozen=True)
 class CrossValidation:
-    def __init__(self, data):
-        self.data = data
-        self.nb = NaiveBayes(data)
+    data: Dataset
+    hyp_range: dict[str, [str]]
 
-    def partition(self, k):
-        n = self.data.df.shape[0]
-        (q, r) = (n // k, n % k)
+    def partition(self) -> [[int]]:
+        n = self.data.X.shape[0]
+        (q, r) = (n // 10, n % 10)
+
         def f(i, j, p):
-            return p if i == k else f(i + 1, j + q + int(i < r), p + [list(range(j, j + q + int(i < r)))])
+            if i == 10:
+                return p
+            else:
+                return f(i + 1, j + q + int(i < r), p + [list(range(j, j + q + int(i < r)))])
         return f(0, 0, [])
 
-    def training_test_dicts(self, df, partition=None):
-        partition = self.partition(10) if partition is None else partition
-        train_index = lambda i: reduce(lambda l1, l2: l1 + l2, partition[:i] + partition[i + 1:])
-        test_dict = dict([(i, df.filter(items=partition[i], axis=0)) for i in range(len(partition))])
-        train_dict = dict([(i, df.filter(items=train_index(i), axis=0)) for i in range(len(partition))])
-        return (train_dict, test_dict)
+    def training_test_dict(self) -> dict[int, tuple[Dataset, Dataset]]:
+        p = self.partition()
+        train = lambda i: self.data.filter(reduce(lambda l1, l2: l1 + l2, p[:i] + p[i + 1:]))
+        test = lambda i: self.data.filter(p[i])
+        return {i: (train(i), test(i)) for i in range(10)}
 
-    def zero_one_loss(self, predicted, actual):
-        return sum(predicted.to_numpy() != actual.to_numpy()) / len(predicted)
 
     def error(self, train_dict, test_dict):
         def error_func(f, b, p, m):
@@ -36,6 +40,11 @@ class CrossValidation:
             return self.zero_one_loss(predicted_classes, actual_classes)
         return error_func
 
+    def error(self, model: NaiveBayes, train: Dataset, test:Dataset):
+        classifier = model(train)
+        predicted = test.X.apply(classifier, axis=1)
+        actual = test.y
+        return zero_one_loss(predicted, actual)
 
     def getErrorDf(self, train_dict, test_dict, bin_numbers, p_vals, m_vals):
         start_time = time.time()

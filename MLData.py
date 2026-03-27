@@ -24,6 +24,15 @@ class Dataset:
             classes=self.classes,
         )
 
+    def filter(self, index):
+        return Dataset(
+            name=self.name,
+            X=self.X.filter(items=index, axis=0),
+            y=self.y.filter(items=index, axis=0),
+            task_type=self.task_type,
+            classes=self.classes,
+        )
+
 
 def load_data(name: str) -> pd.DataFrame:
     return pd.read_csv(Path("data_raw") / f"{name}.csv", header=None)
