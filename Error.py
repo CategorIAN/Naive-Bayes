@@ -12,3 +12,10 @@ def error(model: NaiveBayes, train: Dataset, test: Dataset) -> float:
     predicted = test.X.apply(classifier, axis=1)
     actual = test.y
     return zero_one_loss(predicted, actual)
+
+
+def predict(model: NaiveBayes, train: Dataset, test: Dataset) -> float:
+    classifier = model(train)
+    predicted = test.X.apply(classifier, axis=1)
+    actual = test.y
+    return zero_one_loss(predicted, actual)

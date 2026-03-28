@@ -1,19 +1,22 @@
-from functools import reduce
+from functools import cached_property
 import pandas as pd
-import os
-from itertools import product
-import time
 from NaiveBayes import NaiveBayes
 from dataclasses import dataclass
 from MLData import Dataset
-from Error import zero_one_loss
+from collections.abc import Sequence
+import os
+import django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django-project.settings")
+django.setup()
+from myapp.models import Prediction
 
 @dataclass(frozen=True)
 class CrossValidation:
     data: Dataset
-    hyp_range: dict[str, [str]]
+    bin_sizes: Sequence[int]
+    alphas: Sequence[float]
 
-    def partition(self) -> [[int]]:
+    def partition(self) -> list[list[int]]:
         n = self.data.X.shape[0]
         (q, r) = (n // 10, n % 10)
 
@@ -24,41 +27,72 @@ class CrossValidation:
                 return f(i + 1, j + q + int(i < r), p + [list(range(j, j + q + int(i < r)))])
         return f(0, 0, [])
 
-    def training_test_dict(self) -> dict[int, tuple[Dataset, Dataset]]:
-        p = self.partition()
-        train = lambda i: self.data.filter(reduce(lambda l1, l2: l1 + l2, p[:i] + p[i + 1:]))
-        test = lambda i: self.data.filter(p[i])
+    def _train_test_dict(self) -> dict[int, tuple[Dataset, Dataset]]:
+        parts = self.partition()
+        train = lambda i: self.data.filter([idx for j, fold in enumerate(parts) if j != i for idx in fold])
+        test = lambda i: self.data.filter(parts[i])
         return {i: (train(i), test(i)) for i in range(10)}
 
-    def getErrorDf(self, train_dict, test_dict, bin_numbers, p_vals, m_vals):
-        start_time = time.time()
-        folds = pd.Index(range(10))
-        error_func = self.error(train_dict, test_dict)
-        rows = pd.Series(product(folds, bin_numbers, p_vals, m_vals)).map(lambda hyps: hyps + (error_func(*hyps),))
-        col_titles = ["Fold", "Bin Number", "p_val", "m_val", "Error"]
-        error_df = pd.DataFrame.from_dict(data = dict(rows), orient = "index", columns = col_titles)
-        error_df.to_csv("\\".join([os.getcwd(), str(self.data), "{}_Error.csv".format(str(self.data))]))
-        print("Time Elapsed: {} Seconds".format(time.time() - start_time))
-        return error_df
+    @cached_property
+    def train_test_dict(self):
+        return self._train_test_dict()
 
-    def getAnalysisDf(self, error_df):
-        analysis_df = error_df.groupby(by = ["Bin Number", "p_val", "m_val"]).mean()[["Error"]]
-        analysis_df.to_csv("\\".join([os.getcwd(), str(self.data), "{}_Analysis.csv".format(str(self.data))]))
-        return analysis_df
+    @cached_property
+    def prediction_index(self):
+        return pd.Series([
+            (bin_size, alpha, i, j)
+            for bin_size in self.bin_sizes
+            for alpha in self.alphas
+            for i in range(10)
+            for j in range(self.train_test_dict[i][1].X.shape[0])
+        ])
 
-    def best_params(self, bin_numbers, p_vals, m_vals):
-        p = self.partition(10)
-        (train_dict, test_dict) = self.training_test_dicts(self.data.df, p)
-        error_df = self.getErrorDf(train_dict, test_dict, bin_numbers, p_vals, m_vals)
-        analysis_df = self.getAnalysisDf(error_df)
-        best_row = analysis_df.loc[lambda df: df["Error"] == analysis_df["Error"].min()].iloc[0]
-        return best_row
+    def makePrediction(self, bin_size, alpha, i):
+        model = NaiveBayes(bin_size, alpha)
+        train, test = self.train_test_dict[i]
+        classifier = model(train)
+        def f(j):
+            predicted = classifier(test.X.iloc[j])
+            actual = test.y.iloc[j]
+            Prediction.objects.get_or_create(
+                bin_size = bin_size,
+                alpha = alpha,
+                test_set_index = i,
+                row_index = j,
+                defaults={
+                    "predicted": predicted,
+                    "actual": actual
+                }
+            )
+        return f
 
-    def value(self, df):
-        return lambda i: df.loc[i, self.data.features]
+    def first_missing_prediction(self):
+        existing = set(Prediction.objects.values_list("bin_size", "alpha", "test_set_index", "row_index"))
 
-    def target(self, i):
-        return self.data.df.at[i, "Class"]
+        for k, v in self.prediction_index.items():
+            if v not in existing:
+                return k
+
+        return None
+
+    def predict(self):
+        k = self.first_missing_prediction()
+        if k is None:
+            return None
+
+        prev_key = None
+        predict_fn = None
+
+        while k < len(self.prediction_index):
+            bin_size, alpha, i, j = self.prediction_index[k]
+            key = (bin_size, alpha, i)
+
+            if predict_fn is None or key != prev_key:
+                predict_fn = self.makePrediction(bin_size, alpha, i)
+                prev_key = key
+
+            predict_fn(j)
+            k += 1
 
 
 
