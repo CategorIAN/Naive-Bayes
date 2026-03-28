@@ -30,22 +30,6 @@ class CrossValidation:
         test = lambda i: self.data.filter(p[i])
         return {i: (train(i), test(i)) for i in range(10)}
 
-
-    def error(self, train_dict, test_dict):
-        def error_func(f, b, p, m):
-            train_df, test_df = (self.nb.binned(train_dict[f], b), self.nb.binned(test_dict[f], b))
-            pred_class = self.nb.predicted_class(train_df, p, m)
-            predicted_classes = test_df.index.map(lambda i: pred_class(self.nb.value(test_df)(i)))
-            actual_classes = test_df.index.map(self.nb.target)
-            return self.zero_one_loss(predicted_classes, actual_classes)
-        return error_func
-
-    def error(self, model: NaiveBayes, train: Dataset, test:Dataset):
-        classifier = model(train)
-        predicted = test.X.apply(classifier, axis=1)
-        actual = test.y
-        return zero_one_loss(predicted, actual)
-
     def getErrorDf(self, train_dict, test_dict, bin_numbers, p_vals, m_vals):
         start_time = time.time()
         folds = pd.Index(range(10))
