@@ -51,7 +51,8 @@ class CrossValidation:
         model = NaiveBayes(bin_size, alpha)
         train, test = self.train_test_dict[i]
         classifier = model(train)
-        def f(j):
+
+        def f_real(j):
             predicted = classifier(test.X.iloc[j])
             actual = test.y.iloc[j]
             Prediction.objects.get_or_create(
@@ -64,7 +65,12 @@ class CrossValidation:
                     "actual": actual
                 }
             )
-        return f
+
+        def f_fake(j):
+            predicted = classifier(test.X.iloc[j])
+            actual = test.y.iloc[j]
+            print("\n".join([10 * "-", str(bin_size), str(alpha), str(i), str(j), str(predicted), str(actual)]))
+        return f_fake
 
     def first_missing_prediction(self):
         existing = set(Prediction.objects.values_list("bin_size", "alpha", "test_set_index", "row_index"))

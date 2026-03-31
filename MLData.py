@@ -12,13 +12,17 @@ class Dataset:
     task_type: str
     classes: pd.Index | None = None
 
+    def __str__(self):
+        pd.set_option("display.max_columns", None)   # show all columns
+        return f"Dataset: {self.name}\n{10*'-'}\n{self.df().head()}\n{10*'-'}"
+
     def df(self) -> pd.DataFrame:
         return pd.concat([self.X, self.y], axis=1)
 
-    def map(self, f):
+    def transform(self, X):
         return Dataset(
             name=self.name,
-            X=f(self.X),
+            X=X,
             y=self.y,
             task_type=self.task_type,
             classes=self.classes,
