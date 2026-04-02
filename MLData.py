@@ -2,6 +2,7 @@ import pandas as pd
 from dataclasses import dataclass
 from pathlib import Path
 import yaml
+from typing import Self
 
 
 @dataclass(frozen=True)
@@ -19,7 +20,7 @@ class Dataset:
     def df(self) -> pd.DataFrame:
         return pd.concat([self.X, self.y], axis=1)
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> Self:
         return Dataset(
             name=self.name,
             X=X,
@@ -28,7 +29,7 @@ class Dataset:
             classes=self.classes,
         )
 
-    def filter(self, index):
+    def filter(self, index: list[object]) -> Self:
         return Dataset(
             name=self.name,
             X=self.X.filter(items=index, axis=0),
