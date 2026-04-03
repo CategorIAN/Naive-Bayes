@@ -16,11 +16,13 @@ def g():
     cv.makePrediction(5, 1, 0)(0)
 
 
-def h():
+def h(bin_sizes, alphas):
     data = get_data("soybean")
-    cv = CrossValidation(data, bin_sizes=[1], alphas=[1])
+    cv = CrossValidation(data, bin_sizes=bin_sizes, alphas=alphas)
     cv.predict()
 
 
 if __name__ == '__main__':
-    h()
+    bin_sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+    alphas = [0.01, 0.1, 1, 10]
+    h(bin_sizes, alphas)

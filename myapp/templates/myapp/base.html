@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Naive Bayes Experiments</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        nav {
+            background: #333;
+            padding: 10px;
+        }
+        nav a {
+            color: white;
+            margin-right: 15px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            text-decoration: underline
+        }
+        .container {
+            padding: 20px
+        }
+    </style>
+    <style>
+        .dataframe-table {
+            border-collapse: collapse;
+            width: 100%;
+    }
+
+    .dataframe-table th,
+    .dataframe-table td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .dataframe-table th {
+        background: #f3f3f3;
+    }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/data/">Data</a>
+</nav>
+
+<div class="container">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>

@@ -7,8 +7,8 @@ class Prediction(models.Model):
     test_set_index = models.IntegerField()
     row_index = models.IntegerField()
 
-    predicted = models.FloatField()
-    actual = models.FloatField()
+    predicted = models.CharField(max_length=10)
+    actual = models.CharField(max_length=10)
 
     class Meta:
         constraints = [
