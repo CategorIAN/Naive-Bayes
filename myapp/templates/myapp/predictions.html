@@ -1,0 +1,35 @@
+{% extends "myapp/base.html" %}
+
+{% block content %}
+<h1>Predictions</h1>
+<div class="table-scroll">
+    <table class="dataframe-table">
+        <thead>
+            <tr>
+                <th>Bin Size</th>
+                <th>Alpha</th>
+                <th>Test Set</th>
+                <th>Row</th>
+                <th>Actual</th>
+                <th>Predicted</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr{% if row.actual != row.predicted %} class="wrong-row"{% endif %}>
+                <td>{{ row.bin_size }}</td>
+                <td>{{ row.alpha }}</td>
+                <td>{{ row.test_set_index }}</td>
+                <td>{{ row.row_index }}</td>
+                <td>{{ row.actual }}</td>
+                <td>{{ row.predicted }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No predictions found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -23,10 +23,42 @@
             padding: 20px
         }
     </style>
+
     <style>
-        .dataframe-table {
-            border-collapse: collapse;
-            width: 100%;
+    .table-scroll {
+        width: 100%;
+        max-height: 400px;   /* controls vertical size */
+        overflow: auto;
+        position: relative
+    }
+
+    .table-scroll table {
+        min-width: 1200px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-scroll th,
+    .table-scroll td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+        white-space: nowrap;
+        background: white;
+    }
+
+    /* sticky header */
+    .table-scroll thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #f3f3f3;
+    }
+    </style>
+    <style>
+    .dataframe-table {
+        border-collapse: collapse;
+        min-width: 900px;
     }
 
     .dataframe-table th,
@@ -34,18 +66,27 @@
         border: 1px solid #ccc;
         padding: 8px;
         text-align: left;
+        white-space: nowrap;
     }
 
     .dataframe-table th {
         background: #f3f3f3;
     }
-    </style>
+</style>
+<style>
+.wrong-row td {
+    background: #f8d7da;
+}
+</style>
+{% block extra_head %}{% endblock %}
 </head>
 <body>
 
 <nav>
     <a href="/">Home</a>
+    <a href="/info/">Dataset Information</a>
     <a href="/data/">Data</a>
+    <a href="/predictions/">Predictions</a>
 </nav>
 
 <div class="container">
