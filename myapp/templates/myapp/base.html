@@ -23,6 +23,36 @@
             padding: 20px
         }
     </style>
+    <style>
+        .main-nav {
+            background: #333;
+            padding: 10px;
+        }
+
+        .main-nav a {
+            color: white;
+            margin-right: 15px;
+            text-decoration: none;
+        }
+
+        .dataset-nav {
+            background: #eee;
+            padding: 8px 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .dataset-nav a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .dataset-nav a.active {
+            font-weight: bold;
+            color: #000;
+            border-bottom: 2px solid #000;
+        }
+    </style>
 
     <style>
     .table-scroll {
@@ -82,13 +112,24 @@
 </head>
 <body>
 
-<nav>
+<nav class="main-nav">
     <a href="/">Home</a>
     <a href="/info/">Dataset Information</a>
     <a href="/data/">Data</a>
     <a href="/predictions/">Predictions</a>
     <a href="/hyperparameter_error/">Hyperparameter Error</a>
     <a href="/best_hyperparameters/">Best Hyperparameters</a>
+</nav>
+
+<nav class="dataset-nav">
+    <a href="?dataset=soybean"
+       class="{% if current_dataset == 'soybean' %}active{% endif %}">
+       Soybean
+    </a>
+    <a href="?dataset=breast-cancer"
+       class="{% if current_dataset == 'breast-cancer' %}active{% endif %}">
+       Breast Cancer
+    </a>
 </nav>
 
 <div class="container">

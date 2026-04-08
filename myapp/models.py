@@ -1,6 +1,8 @@
 from django.db import models
 
+
 class Prediction(models.Model):
+    dataset_name = models.CharField(max_length=200)
     bin_size = models.IntegerField()
     alpha = models.FloatField()
 
@@ -13,7 +15,9 @@ class Prediction(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["bin_size", "alpha", "test_set_index", "row_index"],
+                fields=["dataset_name", "bin_size", "alpha", "test_set_index", "row_index"],
                 name="unique_prediction"
             )
         ]
+
+

@@ -1,0 +1,20 @@
+name: breast-cancer
+
+columns:
+  - Id
+  - Clump Thickness
+  - Uniformity of Cell Size
+  - Uniformity of Cell Shape
+  - Marginal Adhesion
+  - Single Epithelial Cell Size
+  - Bare Nuclei
+  - Bland Chromatin
+  - Normal Nucleoli
+  - Mitoses
+  - Class
+
+target_name: Class
+
+task_type: classification
+
+replace_value: 3

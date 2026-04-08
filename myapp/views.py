@@ -6,7 +6,6 @@ import pandas as pd
 from pathlib import Path
 from myapp.models import Prediction
 
-
 def highlight_class(col):
     if col.name == "Class":
         return ["background-color: #fff3cd; font-weight: bold;" for _ in col]
@@ -14,7 +13,10 @@ def highlight_class(col):
 
 
 def home(request):
-    return render(request, "myapp/home.html")
+    context = {
+        "datasets": ["soybean", "breast-cancer"]
+    }
+    return render(request, "myapp/home.html", context)
 
 
 def info(request):
@@ -36,7 +38,7 @@ def data(request):
     context = {"title": "Data", "table_html": table_html}
     return render(request, "myapp/data.html", context)
 
-
+""""""
 def predictions(request):
     rows = Prediction.objects.all().order_by(
         "bin_size", "alpha", "test_set_index", "row_index"
@@ -45,6 +47,7 @@ def predictions(request):
     return render(request, "myapp/predictions.html", {
         "rows": rows
     })
+
 
 
 def hyperparameter_error(request):

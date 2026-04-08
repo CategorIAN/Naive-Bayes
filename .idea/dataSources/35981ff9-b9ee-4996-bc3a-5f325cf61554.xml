@@ -499,7 +499,7 @@
     <routine id="190" parent="1" name="fts5"/>
     <schema id="191" parent="1" name="main">
       <Current>1</Current>
-      <LastIntrospectionLocalTimestamp>2026-04-03.16:41:28</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2026-04-08.22:10:40</LastIntrospectionLocalTimestamp>
     </schema>
     <argument id="192" parent="16">
       <ArgumentDirection>R</ArgumentDirection>
@@ -2024,79 +2024,34 @@ model</ColNames>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="653" parent="565" name="bin_size">
-      <DasType>integer|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>2</Position>
-    </column>
-    <column id="654" parent="565" name="alpha">
-      <DasType>real|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>3</Position>
-    </column>
-    <column id="655" parent="565" name="test_set_index">
-      <DasType>integer|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>4</Position>
-    </column>
-    <column id="656" parent="565" name="row_index">
-      <DasType>integer|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>5</Position>
-    </column>
-    <column id="657" parent="565" name="actual">
-      <DasType>varchar(10)|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>6</Position>
-    </column>
-    <column id="658" parent="565" name="predicted">
-      <DasType>varchar(10)|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>7</Position>
-    </column>
-    <index id="659" parent="565" name="sqlite_autoindex_myapp_prediction_1">
-      <ColNames>bin_size
-alpha
-test_set_index
-row_index</ColNames>
-      <NameSurrogate>1</NameSurrogate>
-      <Unique>1</Unique>
-    </index>
-    <key id="660" parent="565">
+    <key id="653" parent="565">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <key id="661" parent="565" name="unique_prediction">
-      <ColNames>bin_size
-alpha
-test_set_index
-row_index</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_myapp_prediction_1</UnderlyingIndexName>
-    </key>
-    <column id="662" parent="566" name="type">
+    <column id="654" parent="566" name="type">
       <DasType>TEXT|0s</DasType>
       <Position>1</Position>
     </column>
-    <column id="663" parent="566" name="name">
+    <column id="655" parent="566" name="name">
       <DasType>TEXT|0s</DasType>
       <Position>2</Position>
     </column>
-    <column id="664" parent="566" name="tbl_name">
+    <column id="656" parent="566" name="tbl_name">
       <DasType>TEXT|0s</DasType>
       <Position>3</Position>
     </column>
-    <column id="665" parent="566" name="rootpage">
+    <column id="657" parent="566" name="rootpage">
       <DasType>INT|0s</DasType>
       <Position>4</Position>
     </column>
-    <column id="666" parent="566" name="sql">
+    <column id="658" parent="566" name="sql">
       <DasType>TEXT|0s</DasType>
       <Position>5</Position>
     </column>
-    <column id="667" parent="567" name="name">
+    <column id="659" parent="567" name="name">
       <Position>1</Position>
     </column>
-    <column id="668" parent="567" name="seq">
+    <column id="660" parent="567" name="seq">
       <Position>2</Position>
     </column>
   </database-model>

@@ -1,4 +1,5 @@
-# Columns of dataset
+name: soybean
+
 columns:
   - Date
   - Plant-Stand

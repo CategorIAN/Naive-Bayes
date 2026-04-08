@@ -5,10 +5,8 @@ from CrossValidation import CrossValidation
 
 
 def f():
-    data = get_data("soybean")
-    nb = NaiveBayes(n=5, alpha=1)
-    classifier = nb(data)
-    print(classifier(data.X.iloc[1]))
+    data = get_data("breast-cancer")
+    print(data)
 
 def g():
     data = get_data("soybean")
@@ -16,13 +14,13 @@ def g():
     cv.makePrediction(5, 1, 0)(0)
 
 
-def h(bin_sizes, alphas):
-    data = get_data("soybean")
+def h():
+    bin_sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+    alphas = [0.01, 0.1, 0.5, 1, 2, 5, 10]
+    data = get_data("breast-cancer")
     cv = CrossValidation(data, bin_sizes=bin_sizes, alphas=alphas)
     cv.predict()
 
 
 if __name__ == '__main__':
-    bin_sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10]
-    alphas = [0.01, 0.1, 1, 10]
-    h(bin_sizes, alphas)
+    h()

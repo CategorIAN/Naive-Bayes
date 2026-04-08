@@ -40,7 +40,7 @@ class CrossValidation:
     @cached_property
     def prediction_index(self):
         return pd.Series([
-            (bin_size, alpha, i, j)
+            (self.data.name, bin_size, alpha, i, j)
             for bin_size in self.bin_sizes
             for alpha in self.alphas
             for i in range(10)
@@ -56,6 +56,7 @@ class CrossValidation:
             predicted = classifier(test.X.iloc[j])
             actual = test.y.iloc[j]
             Prediction.objects.get_or_create(
+                dataset_name = self.data.name,
                 bin_size = bin_size,
                 alpha = alpha,
                 test_set_index = i,
@@ -73,7 +74,7 @@ class CrossValidation:
         return f_real
 
     def first_missing_prediction(self):
-        existing = set(Prediction.objects.values_list("bin_size", "alpha", "test_set_index", "row_index"))
+        existing = set(Prediction.objects.values_list("dataset_name", "bin_size", "alpha", "test_set_index", "row_index"))
 
         for k, v in self.prediction_index.items():
             if v not in existing:
@@ -90,7 +91,7 @@ class CrossValidation:
         predict_fn = None
 
         while k < len(self.prediction_index):
-            bin_size, alpha, i, j = self.prediction_index[k]
+            _, bin_size, alpha, i, j = self.prediction_index[k]
             key = (bin_size, alpha, i)
 
             if predict_fn is None or key != prev_key:
