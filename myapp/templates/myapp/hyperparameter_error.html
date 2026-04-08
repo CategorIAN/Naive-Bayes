@@ -1,0 +1,15 @@
+{% extends "myapp/base.html" %}
+{% block extra_head %}
+<style>
+    .table-scroll tbody tr:first-child td{
+    background: #d4edda;   /* light green */
+    font-weight: bold;
+}
+</style>
+{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="table-scroll">
+{{ table_html | safe }}
+</div>
+{% endblock %}

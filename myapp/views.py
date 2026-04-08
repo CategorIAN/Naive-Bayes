@@ -47,5 +47,59 @@ def predictions(request):
     })
 
 
+def hyperparameter_error(request):
+    df = pd.DataFrame.from_records(
+        Prediction.objects.values(
+            "bin_size",
+            "alpha",
+            "actual",
+            "predicted",
+        )
+    )
+
+    if df.empty:
+        table_html = "<p>No prediction rows found.</p>"
+    else:
+        df["error"] = (df["actual"] != df["predicted"]).astype(float)
+
+        summary = (
+            df.groupby(["bin_size", "alpha"], as_index=False)["error"]
+              .mean()
+              .rename(columns={"error": "avg_error"})
+              .sort_values(["avg_error", "bin_size", "alpha"])
+        )
+
+        table_html = summary.to_html(
+            index=False,
+            classes="dataframe-table",
+            border=0,
+            float_format=lambda x: f"{x:.4f}"
+        )
+    context = {"title": "Hyperparameter Error", "table_html": table_html}
+
+    return render(request, "myapp/hyperparameter_error.html", context)
+
+
+def best_hyperparameters(request):
+    df = pd.DataFrame.from_records(
+        Prediction.objects.values(
+            "bin_size",
+            "alpha",
+            "actual",
+            "predicted",
+        )
+    )
+    df["error"] = (df["actual"] != df["predicted"]).astype(float)
+    summary = (
+        df.groupby(["bin_size", "alpha"], as_index=False)["error"]
+          .mean()
+          .rename(columns={"error": "avg_error"})
+          .sort_values(["avg_error", "bin_size", "alpha"])
+    )
+    bin_size, alpha = summary[["bin_size", "alpha"]].iloc[0]
+    context = {"title": "Best Hyperparameters", "bin_size": int(bin_size), "alpha": alpha}
+
+    return render(request, "myapp/best_hyperparameters.html", context)
+
 
 
