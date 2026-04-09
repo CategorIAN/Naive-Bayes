@@ -55,29 +55,43 @@ def data(request):
 
 
 def predictions(request):
-    rows = Prediction.objects.all().order_by(
-        "bin_size", "alpha", "test_set_index", "row_index"
-    )
+    current_dataset = request.GET.get("dataset")
+    if current_dataset is None:
+        title = "Choose A Dataset"
+        rows = ""
+    else:
+        title = current_dataset.capitalize()
+        rows = (
+            Prediction.objects
+            .filter(dataset_name=current_dataset)
+            .order_by("bin_size", "alpha", "test_set_index", "row_index")
+            )
+    context = {
+        "title": title,
+        "rows": rows,
+        "current_dataset": current_dataset
+    }
 
-    return render(request, "myapp/predictions.html", {
-        "rows": rows
-    })
-
+    return render(request, "myapp/predictions.html", context)
 
 
 def hyperparameter_error(request):
-    df = pd.DataFrame.from_records(
-        Prediction.objects.values(
-            "bin_size",
-            "alpha",
-            "actual",
-            "predicted",
-        )
-    )
-
-    if df.empty:
-        table_html = "<p>No prediction rows found.</p>"
+    current_dataset = request.GET.get("dataset")
+    if current_dataset is None:
+        title = "Choose A Dataset"
+        table_html = ""
     else:
+        title = current_dataset.capitalize()
+        df = pd.DataFrame.from_records(
+            Prediction.objects
+                .filter(dataset_name=current_dataset)
+                .values(
+                "bin_size",
+                "alpha",
+                "actual",
+                "predicted",
+            )
+        )
         df["error"] = (df["actual"] != df["predicted"]).astype(float)
 
         summary = (
@@ -93,29 +107,49 @@ def hyperparameter_error(request):
             border=0,
             float_format=lambda x: f"{x:.4f}"
         )
-    context = {"title": "Hyperparameter Error", "table_html": table_html}
+    context = {
+        "title": title,
+        "table_html": table_html,
+        "current_dataset": current_dataset
+    }
 
     return render(request, "myapp/hyperparameter_error.html", context)
 
 
 def best_hyperparameters(request):
-    df = pd.DataFrame.from_records(
-        Prediction.objects.values(
-            "bin_size",
-            "alpha",
-            "actual",
-            "predicted",
+    current_dataset = request.GET.get("dataset")
+    if current_dataset is None:
+        title = "Choose A Dataset"
+        results = ""
+    else:
+        title = current_dataset.capitalize()
+        df = pd.DataFrame.from_records(
+            Prediction.objects
+                .filter(dataset_name=current_dataset)
+                .values(
+                "bin_size",
+                "alpha",
+                "actual",
+                "predicted",
+            )
         )
-    )
-    df["error"] = (df["actual"] != df["predicted"]).astype(float)
-    summary = (
-        df.groupby(["bin_size", "alpha"], as_index=False)["error"]
-          .mean()
-          .rename(columns={"error": "avg_error"})
-          .sort_values(["avg_error", "bin_size", "alpha"])
-    )
-    bin_size, alpha = summary[["bin_size", "alpha"]].iloc[0]
-    context = {"title": "Best Hyperparameters", "bin_size": int(bin_size), "alpha": alpha}
+        df["error"] = (df["actual"] != df["predicted"]).astype(float)
+        summary = (
+            df.groupby(["bin_size", "alpha"], as_index=False)["error"]
+              .mean()
+              .rename(columns={"error": "avg_error"})
+              .sort_values(["avg_error", "bin_size", "alpha"])
+        )
+        bin_size, alpha = summary[["bin_size", "alpha"]].iloc[0]
+        results = f"""
+        <h3> Best Bin Size is {int(bin_size)} </h3>
+        <h3> Best Alpha is {alpha} </h3>
+        """
+    context = {
+                "title": title,
+                "results": results,
+                "current_dataset": current_dataset
+    }
 
     return render(request, "myapp/best_hyperparameters.html", context)
 

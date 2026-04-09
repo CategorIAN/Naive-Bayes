@@ -1,7 +1,9 @@
 {% extends "myapp/base.html" %}
 
 {% block content %}
-<h1>Predictions</h1>
+<h1>{{ title }}</h1>
+{% if current_dataset is None %}
+{% else %}
 <div class="table-scroll">
     <table class="dataframe-table">
         <thead>
@@ -32,4 +34,5 @@
         </tbody>
     </table>
 </div>
+{% endif %}
 {% endblock %}
