@@ -13,32 +13,47 @@ def highlight_class(col):
 
 
 def home(request):
+    current_dataset = request.GET.get("dataset")
     context = {
-        "datasets": ["soybean", "breast-cancer"]
+        "current_dataset": current_dataset
     }
     return render(request, "myapp/home.html", context)
 
 
 def info(request):
-    file_path = Path(settings.BASE_DIR) / "documentation" / "soybean.names"
-    text = file_path.read_text(encoding="utf-8")
-    context = {"text": text}
+    current_dataset = request.GET.get("dataset")
+    if current_dataset is None:
+        text = ""
+    else:
+        file_path = Path(settings.BASE_DIR) / "documentation" / f"{current_dataset}.names"
+        text = file_path.read_text(encoding="utf-8")
+    context = {"text": text, "current_dataset": current_dataset}
     return render(request, "myapp/info.html", context)
 
 
 def data(request):
-    file_path = Path(settings.BASE_DIR) / "data_processed" / "soybean.csv"
-    df = pd.read_csv(file_path)
-    styled = (
-        df.style
-        .apply(highlight_class, axis=0)
-        .set_table_attributes('class="dataframe-table"')
-    )
-    table_html = styled.to_html()
-    context = {"title": "Data", "table_html": table_html}
+    current_dataset = request.GET.get("dataset")
+    if current_dataset is None:
+        title = "Choose A Dataset"
+        table_html = ""
+    else:
+        title = current_dataset.capitalize()
+        file_path = Path(settings.BASE_DIR) / "data_processed" / f"{current_dataset}.csv"
+        df = pd.read_csv(file_path)
+        styled = (
+            df.style
+            .apply(highlight_class, axis=0)
+            .set_table_attributes('class="dataframe-table"')
+        )
+        table_html = styled.to_html()
+    context = {
+        "title": title,
+        "table_html": table_html,
+        "current_dataset": current_dataset
+    }
     return render(request, "myapp/data.html", context)
 
-""""""
+
 def predictions(request):
     rows = Prediction.objects.all().order_by(
         "bin_size", "alpha", "test_set_index", "row_index"
