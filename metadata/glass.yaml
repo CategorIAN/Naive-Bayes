@@ -1,0 +1,20 @@
+name: forestfires
+
+columns:
+  - Id
+  - RI
+  - Na
+  - Mg
+  - Al
+  - Si
+  - K
+  - Ca
+  - Ba
+  - Fe
+  - Class
+
+target_name: Class
+
+task_type: classification
+
+replace_value:

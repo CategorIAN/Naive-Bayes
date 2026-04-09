@@ -17,7 +17,7 @@ def g():
 def h():
     bin_sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10]
     alphas = [0.01, 0.1, 0.5, 1, 2, 5, 10]
-    data = get_data("breast-cancer")
+    data = get_data("glass")
     cv = CrossValidation(data, bin_sizes=bin_sizes, alphas=alphas)
     cv.predict()
 

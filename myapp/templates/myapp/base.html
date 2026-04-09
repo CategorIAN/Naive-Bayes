@@ -55,59 +55,59 @@
     </style>
 
     <style>
-    .table-scroll {
-        width: 100%;
-        max-height: 380px;   /* controls vertical size */
-        overflow: auto;
-        position: relative
-    }
+        .table-scroll {
+            width: 100%;
+            max-height: 380px;   /* controls vertical size */
+            overflow: auto;
+            position: relative
+        }
 
-    .table-scroll table {
-        min-width: 1200px;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
+        .table-scroll table {
+            min-width: 1200px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
 
-    .table-scroll th,
-    .table-scroll td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: left;
-        white-space: nowrap;
-        background: white;
-    }
+        .table-scroll th,
+        .table-scroll td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap;
+            background: white;
+        }
 
-    /* sticky header */
-    .table-scroll thead th {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        background: #f3f3f3;
-    }
+        /* sticky header */
+        .table-scroll thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f3f3f3;
+        }
     </style>
     <style>
-    .dataframe-table {
-        border-collapse: collapse;
-        min-width: 900px;
-    }
+        .dataframe-table {
+            border-collapse: collapse;
+            min-width: 900px;
+        }
 
-    .dataframe-table th,
-    .dataframe-table td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: left;
-        white-space: nowrap;
-    }
+        .dataframe-table th,
+        .dataframe-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
 
-    .dataframe-table th {
-        background: #f3f3f3;
-    }
-</style>
-<style>
-.wrong-row td {
-    background: #f8d7da;
-}
-</style>
+        .dataframe-table th {
+            background: #f3f3f3;
+        }
+    </style>
+    <style>
+        .wrong-row td {
+            background: #f8d7da;
+        }
+    </style>
 {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -129,6 +129,10 @@
     <a href="?dataset=breast-cancer"
        class="{% if current_dataset == 'breast-cancer' %}active{% endif %}">
        Breast Cancer
+    </a>
+    <a  href="?dataset=glass"
+        class="{% if current_dataset == 'glass' %}active{% endif %}">
+        Glass
     </a>
 </nav>
 

@@ -55,6 +55,7 @@ class CrossValidation:
         def f_real(j):
             predicted = classifier(test.X.iloc[j])
             actual = test.y.iloc[j]
+            print("\n".join([str(x) for x in [20 * "-", self.data.name, bin_size, alpha, i, j, predicted, actual]]))
             Prediction.objects.get_or_create(
                 dataset_name = self.data.name,
                 bin_size = bin_size,
