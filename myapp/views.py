@@ -13,26 +13,33 @@ def highlight_class(col):
 
 
 def home(request):
-    current_dataset = request.GET.get("dataset")
+    current_dataset = request.GET.get("dataset", "soybean")
+    print(current_dataset)
     context = {
+        "current_page": "home",
         "current_dataset": current_dataset
     }
     return render(request, "myapp/home.html", context)
 
 
 def info(request):
-    current_dataset = request.GET.get("dataset")
-    if current_dataset is None:
+    current_dataset = request.GET.get("dataset", "soybean")
+    if current_dataset == "":
         text = ""
     else:
         file_path = Path(settings.BASE_DIR) / "documentation" / f"{current_dataset}.names"
         text = file_path.read_text(encoding="utf-8")
-    context = {"text": text, "current_dataset": current_dataset}
+    context = {
+        "text": text,
+        "current_page": "info",
+        "current_dataset": current_dataset
+    }
+    print(current_dataset)
     return render(request, "myapp/info.html", context)
 
 
 def data(request):
-    current_dataset = request.GET.get("dataset")
+    current_dataset = request.GET.get("dataset", "soybean")
     if current_dataset is None:
         title = "Choose A Dataset"
         table_html = ""
@@ -49,13 +56,14 @@ def data(request):
     context = {
         "title": title,
         "table_html": table_html,
+        "current_page": "data",
         "current_dataset": current_dataset
     }
     return render(request, "myapp/data.html", context)
 
 
 def predictions(request):
-    current_dataset = request.GET.get("dataset")
+    current_dataset = request.GET.get("dataset", "soybean")
     if current_dataset is None:
         title = "Choose A Dataset"
         rows = ""
@@ -69,6 +77,7 @@ def predictions(request):
     context = {
         "title": title,
         "rows": rows,
+        "current_page": "predictions",
         "current_dataset": current_dataset
     }
 
@@ -76,7 +85,7 @@ def predictions(request):
 
 
 def hyperparameter_error(request):
-    current_dataset = request.GET.get("dataset")
+    current_dataset = request.GET.get("dataset", "soybean")
     if current_dataset is None:
         title = "Choose A Dataset"
         table_html = ""
@@ -110,6 +119,7 @@ def hyperparameter_error(request):
     context = {
         "title": title,
         "table_html": table_html,
+        "current_page": "hyperparameter_error",
         "current_dataset": current_dataset
     }
 
@@ -117,7 +127,7 @@ def hyperparameter_error(request):
 
 
 def best_hyperparameters(request):
-    current_dataset = request.GET.get("dataset")
+    current_dataset = request.GET.get("dataset", "soybean")
     if current_dataset is None:
         title = "Choose A Dataset"
         results = ""
@@ -148,6 +158,7 @@ def best_hyperparameters(request):
     context = {
                 "title": title,
                 "results": results,
+                "current_page": "best_hyperparameters",
                 "current_dataset": current_dataset
     }
 

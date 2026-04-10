@@ -7,6 +7,9 @@
             font-family: Arial, sans-serif;
             margin: 0;
         }
+    </style>
+    <!-------------------------------------------------------------->
+    <style>
         nav {
             background: #333;
             padding: 10px;
@@ -19,14 +22,35 @@
         nav a:hover {
             text-decoration: underline
         }
+    </style>
+    <!-------------------------------------------------------------->
+    <style>
         .container {
-            padding: 20px
+            margin-left: 300px;
         }
     </style>
+    <!-------------------------------------------------------------->
+    <style>
+        .sidebar {
+            display: flex;        /* 🔥 puts them side by side */
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+        }
+    </style>
+    <!-------------------------------------------------------------->
     <style>
         .main-nav {
             background: #333;
             padding: 10px;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .main-nav a {
@@ -37,8 +61,11 @@
 
         .dataset-nav {
             background: #eee;
-            padding: 8px 10px;
-            border-bottom: 1px solid #ccc;
+            padding: 10px;
+            width: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .dataset-nav a {
@@ -47,10 +74,10 @@
             color: #333;
         }
 
-        .dataset-nav a.active {
+        .dataset-nav a.active, .main-nav a.active {
             font-weight: bold;
-            color: #000;
-            border-bottom: 2px solid #000;
+            color: blue;
+            border-bottom: 2px solid blue;
         }
     </style>
 
@@ -94,7 +121,7 @@
         .dataframe-table th,
         .dataframe-table td {
             border: 1px solid #ccc;
-            padding: 8px;
+            padding: 1px;
             text-align: left;
             white-space: nowrap;
         }
@@ -111,30 +138,45 @@
 {% block extra_head %}{% endblock %}
 </head>
 <body>
+<div class="sidebar">
+    <nav class="main-nav">
+        <a href="/info/?dataset={{ current_dataset }}"
+        class="{% if current_page == 'info' %}active{% endif %}">
+            About
+        </a>
+        <a href="/data/?dataset={{ current_dataset }}"
+        class="{% if current_page == 'data' %}active{% endif %}">
+            Data
+        </a>
+        <a href="/predictions/?dataset={{ current_dataset }}"
+        class="{% if current_page == 'predictions' %}active{% endif %}">
+            Predict
+        </a>
+        <a href="/hyperparameter_error/?dataset={{ current_dataset }}"
+        class="{% if current_page == 'hyperparameter_error' %}active{% endif %}">
+            Error
+        </a>
+        <a href="/best_hyperparameters/?dataset={{ current_dataset }}"
+        class="{% if current_page == 'best_hyperparameters' %}active{% endif %}">
+            Best Model
+        </a>
+    </nav>
 
-<nav class="main-nav">
-    <a href="/">Home</a>
-    <a href="/info/">Dataset Information</a>
-    <a href="/data/">Data</a>
-    <a href="/predictions/">Predictions</a>
-    <a href="/hyperparameter_error/">Hyperparameter Error</a>
-    <a href="/best_hyperparameters/">Best Hyperparameters</a>
-</nav>
-
-<nav class="dataset-nav">
-    <a href="?dataset=soybean"
-       class="{% if current_dataset == 'soybean' %}active{% endif %}">
-       Soybean
-    </a>
-    <a href="?dataset=breast-cancer"
-       class="{% if current_dataset == 'breast-cancer' %}active{% endif %}">
-       Breast Cancer
-    </a>
-    <a  href="?dataset=glass"
-        class="{% if current_dataset == 'glass' %}active{% endif %}">
-        Glass
-    </a>
-</nav>
+    <nav class="dataset-nav">
+        <a href="?dataset=soybean"
+           class="{% if current_dataset == 'soybean' %}active{% endif %}">
+           Soybean
+        </a>
+        <a href="?dataset=breast-cancer"
+           class="{% if current_dataset == 'breast-cancer' %}active{% endif %}">
+           Breast Cancer
+        </a>
+        <a  href="?dataset=glass"
+            class="{% if current_dataset == 'glass' %}active{% endif %}">
+            Glass
+        </a>
+    </nav>
+</div>
 
 <div class="container">
     {% block content %}
