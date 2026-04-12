@@ -10,50 +10,87 @@
     </style>
     <!-------------------------------------------------------------->
     <style>
-        nav {
-            background: #333;
-            padding: 10px;
+        .top-nav {
+            background: #222;
+            padding: 12px 16px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
-        nav a {
+
+        .top-nav a {
             color: white;
-            margin-right: 15px;
             text-decoration: none;
         }
-        nav a:hover {
-            text-decoration: underline
+
+        .top-nav a:hover {
+            text-decoration: underline;
+        }
+
+        .top-nav a.active {
+            font-weight: bold;
+            color: #7ab8ff;
+            border-bottom: 2px solid #7ab8ff;
         }
     </style>
     <!-------------------------------------------------------------->
     <style>
         .container {
+            margin-top: 56px;
+            padding: 20px;
+        }
+
+        .container.sidebar-tuning {
             margin-left: 300px;
+        }
+
+        .container.sidebar-data {
+            margin-left: 120px;
+        }
+
+        .container.no-sidebar {
+            margin-left: 0;
         }
     </style>
     <!-------------------------------------------------------------->
     <style>
         .sidebar {
-            display: flex;        /* 🔥 puts them side by side */
+            display: flex;
             position: fixed;
-            top: 0;
+            top: 56px;
             left: 0;
             bottom: 0;
+        }
+
+        .dataset-sidebar {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            bottom: 0;
+        }
+
+        .dataset-sidebar .task-nav {
+            height: 100%;
+            box-sizing: border-box;
         }
     </style>
     <!-------------------------------------------------------------->
     <style>
-        .main-nav {
+        .task-nav {
             background: #333;
             padding: 10px;
-            top: 0;
-            bottom: 0;
-            left: 0;
             width: 100px;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .main-nav a {
+        .task-nav a {
             color: white;
             margin-right: 15px;
             text-decoration: none;
@@ -74,7 +111,8 @@
             color: #333;
         }
 
-        .dataset-nav a.active, .main-nav a.active {
+        .dataset-nav a.active,
+        .task-nav a.active {
             font-weight: bold;
             color: blue;
             border-bottom: 2px solid blue;
@@ -124,12 +162,32 @@
 {% block extra_head %}{% endblock %}
 </head>
 <body>
+<nav class="top-nav">
+    <a href="/?dataset={{ current_dataset }}"
+       class="{% if current_section == 'about_model' %}active{% endif %}">About The Model</a>
+    <a href="/info/?dataset={{ current_dataset }}"
+       class="{% if current_section == 'about_data' %}active{% endif %}">About The Data</a>
+    <a href="/data/?dataset={{ current_dataset }}"
+       class="{% if current_section == 'tuning' %}active{% endif %}">Tuning The Model</a>
+</nav>
+
+{% if sidebar_mode == 'tuning' %}
 <div class="sidebar">
-    <nav class="main-nav">
-        <a href="/info/?dataset={{ current_dataset }}"
-        class="{% if current_page == 'info' %}active{% endif %}">
-            About
+    <nav class="task-nav">
+        <a href="?dataset=soybean"
+           class="{% if current_dataset == 'soybean' %}active{% endif %}">
+           Soybean
         </a>
+        <a href="?dataset=breast-cancer"
+           class="{% if current_dataset == 'breast-cancer' %}active{% endif %}">
+           Breast Cancer
+        </a>
+        <a href="?dataset=glass"
+            class="{% if current_dataset == 'glass' %}active{% endif %}">
+            Glass
+        </a>
+    </nav>
+    <nav class="dataset-nav">
         <a href="/data/?dataset={{ current_dataset }}"
         class="{% if current_page == 'data' %}active{% endif %}">
             Data
@@ -147,8 +205,12 @@
             Best Model
         </a>
     </nav>
+</div>
+{% endif %}
 
-    <nav class="dataset-nav">
+{% if sidebar_mode == 'data_about' %}
+<div class="dataset-sidebar">
+    <nav class="task-nav">
         <a href="?dataset=soybean"
            class="{% if current_dataset == 'soybean' %}active{% endif %}">
            Soybean
@@ -157,14 +219,15 @@
            class="{% if current_dataset == 'breast-cancer' %}active{% endif %}">
            Breast Cancer
         </a>
-        <a  href="?dataset=glass"
+        <a href="?dataset=glass"
             class="{% if current_dataset == 'glass' %}active{% endif %}">
             Glass
         </a>
     </nav>
 </div>
+{% endif %}
 
-<div class="container">
+<div class="container {% if sidebar_mode == 'tuning' %}sidebar-tuning{% elif sidebar_mode == 'data_about' %}sidebar-data{% else %}no-sidebar{% endif %}">
     {% block content %}
     {% endblock %}
 </div>

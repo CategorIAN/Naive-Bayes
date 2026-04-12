@@ -14,10 +14,11 @@ def highlight_class(col):
 
 def home(request):
     current_dataset = request.GET.get("dataset", "soybean")
-    print(current_dataset)
     context = {
         "current_page": "home",
-        "current_dataset": current_dataset
+        "current_dataset": current_dataset,
+        "current_section": "about_model",
+        "sidebar_mode": "none",
     }
     return render(request, "myapp/home.html", context)
 
@@ -32,9 +33,10 @@ def info(request):
     context = {
         "text": text,
         "current_page": "info",
-        "current_dataset": current_dataset
+        "current_dataset": current_dataset,
+        "current_section": "about_data",
+        "sidebar_mode": "data_about",
     }
-    print(current_dataset)
     return render(request, "myapp/info.html", context)
 
 
@@ -57,7 +59,9 @@ def data(request):
         "title": title,
         "table_html": table_html,
         "current_page": "data",
-        "current_dataset": current_dataset
+        "current_dataset": current_dataset,
+        "current_section": "tuning",
+        "sidebar_mode": "tuning",
     }
     return render(request, "myapp/data.html", context)
 
@@ -78,7 +82,9 @@ def predictions(request):
         "title": title,
         "rows": rows,
         "current_page": "predictions",
-        "current_dataset": current_dataset
+        "current_dataset": current_dataset,
+        "current_section": "tuning",
+        "sidebar_mode": "tuning",
     }
 
     return render(request, "myapp/predictions.html", context)
@@ -120,7 +126,9 @@ def hyperparameter_error(request):
         "title": title,
         "table_html": table_html,
         "current_page": "hyperparameter_error",
-        "current_dataset": current_dataset
+        "current_dataset": current_dataset,
+        "current_section": "tuning",
+        "sidebar_mode": "tuning",
     }
 
     return render(request, "myapp/hyperparameter_error.html", context)
@@ -159,7 +167,9 @@ def best_hyperparameters(request):
                 "title": title,
                 "results": results,
                 "current_page": "best_hyperparameters",
-                "current_dataset": current_dataset
+                "current_dataset": current_dataset,
+                "current_section": "tuning",
+                "sidebar_mode": "tuning",
     }
 
     return render(request, "myapp/best_hyperparameters.html", context)
