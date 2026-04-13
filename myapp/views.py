@@ -1,10 +1,9 @@
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.conf import settings
-import os
 import pandas as pd
 from pathlib import Path
 from myapp.models import Prediction
+import markdown
 
 def highlight_class(col):
     if col.name == "Class":
@@ -12,15 +11,18 @@ def highlight_class(col):
     return ["" for _ in col]
 
 
-def home(request):
+def about_model(request):
     current_dataset = request.GET.get("dataset", "soybean")
+    file_path = Path(settings.BASE_DIR) / "myapp" / "about_model.md"
+    text = file_path.read_text(encoding="utf-8")
+    html = markdown.markdown(text, extensions=["fenced_code", "codehilite"])
     context = {
-        "current_page": "home",
+        "title": "About The Model",
+        "content_html": html,
         "current_dataset": current_dataset,
-        "current_section": "about_model",
-        "sidebar_mode": "none",
     }
-    return render(request, "myapp/home.html", context)
+
+    return render(request, "myapp/about_model.html", context)
 
 
 def info(request):

@@ -93,11 +93,11 @@ class NaiveBayes:
         return max(cl_probs, key=lambda t: t[1])[0]
 
     def __call__(self, data: Dataset) -> Callable[[pd.Series], object]:
-        binner = self.bin_map(data)
-        binned_data = self.binned(binner, data)
-        Q = self.getQ(binned_data)
-        count_map = self.multi_count(binned_data)
-        return partial(self.predict, binner, Q, count_map)
+        binner = self.bin_map(data) # Create binning function.
+        binned_data = self.binned(binner, data) # Get binned data.
+        Q = self.getQ(binned_data) # Get class counts.
+        count_map = self.multi_count(binned_data) # Get class and feature value counts.
+        return partial(self.predict, binner, Q, count_map) # Return function that inputs data point and outputs class.
 
 
 

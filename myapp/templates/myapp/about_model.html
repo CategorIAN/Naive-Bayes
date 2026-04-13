@@ -1,0 +1,32 @@
+{% extends "myapp/base.html" %}
+{% block extra_head %}
+<style>
+    .markdown-content {
+        max-width: 900px;
+        line-height: 1.6;
+    }
+
+    .markdown-content h1,
+    .markdown-content h2,
+    .markdown-content h3 {
+        margin-top: 1.2em;
+    }
+
+    .markdown-content code {
+        background: #f4f4f4;
+        padding: 2px 4px;
+    }
+
+    .markdown-content pre {
+        background: #f4f4f4;
+        padding: 10px;
+        overflow-x: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="markdown-content">
+    {{ content_html|safe }}
+</div>
+{% endblock %}

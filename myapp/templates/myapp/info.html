@@ -1,6 +1,20 @@
 {% extends "myapp/base.html" %}
 
 {% block content %}
-<h1>Dataset Information</h1>
+<h1>
+{% if current_dataset == 'breast-cancer' %}
+<a href="https://archive.ics.uci.edu/ml/datasets/breast+cancer+wisconsin+(original)" target="_blank">
+    Breast Cancer Wisconsin (Original)
+</a>
+{% elif current_dataset == 'soybean' %}
+<a href="https://archive.ics.uci.edu/ml/datasets/soybean+(small)" target="_blank">
+    Soybean (Small)
+</a>
+{% elif current_dataset == 'glass' %}
+<a href="https://archive.ics.uci.edu/ml/datasets/glass+identification" target="_blank">
+    Glass Identification
+</a>
+{% endif %}
+</h1>
 <pre>{{ text }}</pre>
 {% endblock %}
