@@ -19,6 +19,22 @@ def about_model(request):
     context = {
         "title": "About The Model",
         "content_html": html,
+        "current_section": "about_model",
+        "current_dataset": current_dataset,
+    }
+
+    return render(request, "myapp/about_model.html", context)
+
+
+def about_tuning(request):
+    current_dataset = request.GET.get("dataset", "soybean")
+    file_path = Path(settings.BASE_DIR) / "myapp" / "about_tuning.md"
+    text = file_path.read_text(encoding="utf-8")
+    html = markdown.markdown(text, extensions=["fenced_code", "codehilite"])
+    context = {
+        "title": "About The Tuning",
+        "content_html": html,
+        "current_section": "about_tuning",
         "current_dataset": current_dataset,
     }
 

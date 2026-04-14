@@ -172,9 +172,11 @@
 <body>
 <nav class="top-nav">
     <a href="/?dataset={{ current_dataset }}"
-       class="{% if current_section == 'about_model' %}active{% endif %}">About The Model</a>
+       class="{% if current_section == 'about_model' %}active{% endif %}">The Model</a>
+    <a href="/about_tuning/?dataset={{ current_dataset }}"
+       class="{% if current_section == 'about_tuning' %}active{% endif %}">The Tuning</a>
     <a href="/info/?dataset={{ current_dataset }}"
-       class="{% if current_section == 'about_data' %}active{% endif %}">About The Data</a>
+       class="{% if current_section == 'about_data' %}active{% endif %}">The Data</a>
     <a href="/data/?dataset={{ current_dataset }}"
        class="{% if current_section == 'tuning' %}active{% endif %}">Tuning The Model</a>
 </nav>

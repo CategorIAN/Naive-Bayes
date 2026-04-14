@@ -52,7 +52,7 @@ class CrossValidation:
         train, test = self.train_test_dict[i]
         classifier = model(train)
 
-        def f_real(j):
+        def f(j):
             predicted = classifier(test.X.iloc[j])
             actual = test.y.iloc[j]
             print("\n".join([str(x) for x in [20 * "-", self.data.name, bin_size, alpha, i, j, predicted, actual]]))
@@ -67,12 +67,7 @@ class CrossValidation:
                     "actual": actual
                 }
             )
-
-        def f_fake(j):
-            predicted = classifier(test.X.iloc[j])
-            actual = test.y.iloc[j]
-            print("\n".join([10 * "-", str(bin_size), str(alpha), str(i), str(j), str(predicted), str(actual)]))
-        return f_real
+        return f
 
     def first_missing_prediction(self):
         existing = set(Prediction.objects.values_list("dataset_name", "bin_size", "alpha", "test_set_index", "row_index"))
