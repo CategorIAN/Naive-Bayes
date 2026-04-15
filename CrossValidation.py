@@ -6,7 +6,7 @@ from MLData import Dataset
 from collections.abc import Sequence
 import os
 import django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django-project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_project.settings")
 django.setup()
 from myapp.models import Prediction
 
