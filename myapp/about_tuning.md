@@ -1,4 +1,4 @@
-# Model Tuning
+# [Model Tuning](https://github.com/CategorIAN/Naive-Bayes/blob/main/CrossValidation.py)
 
 ## Overview
 
@@ -76,4 +76,4 @@ The best hyperparameters are those that minimize the average error across all fo
 
 - `Tuning The Model → Predict`: row-level predictions  
 - `Tuning The Model → Error`: average error by `(n, alpha)`  
-- `Tuning The Model → Best Model`: best hyperparameters found  
+- `Tuning The Model → Best Model`: best hyperparameters found

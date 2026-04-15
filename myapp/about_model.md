@@ -1,4 +1,4 @@
-# Naive Bayes Model
+# [Naive Bayes Model](https://github.com/CategorIAN/Naive-Bayes/blob/main/NaiveBayes.py)
 
 ## Overview
 
