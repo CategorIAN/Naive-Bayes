@@ -59,21 +59,29 @@ def info(request):
 
 
 def data(request):
-    print("prediction count:", Prediction.objects.count())
+    print("Line 1")
     current_dataset = request.GET.get("dataset", "soybean")
+    print("Line 2")
     if current_dataset is None:
+        print("Line 3")
         title = "Choose A Dataset"
         table_html = ""
     else:
+        print("Line 4")
         title = current_dataset.capitalize()
+        print("Line 5")
         file_path = Path(settings.BASE_DIR) / "data_processed" / f"{current_dataset}.csv"
+        print("Line 6")
         df = pd.read_csv(file_path)
+        print("Line 7")
         styled = (
             df.style
             .apply(highlight_class, axis=0)
             .set_table_attributes('class="dataframe-table"')
         )
+        print("Line 8")
         table_html = styled.to_html()
+        print("Line 9")
     context = {
         "title": title,
         "table_html": table_html,
@@ -82,6 +90,7 @@ def data(request):
         "current_section": "tuning",
         "sidebar_mode": "tuning",
     }
+    print("Line 10")
     return render(request, "myapp/data.html", context)
 
 
