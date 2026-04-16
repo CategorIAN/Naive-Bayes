@@ -59,6 +59,7 @@ def info(request):
 
 
 def data(request):
+    print("prediction count:", Prediction.objects.count())
     current_dataset = request.GET.get("dataset", "soybean")
     if current_dataset is None:
         title = "Choose A Dataset"
