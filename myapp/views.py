@@ -74,11 +74,18 @@ def data(request):
         print("Line 6")
         df = pd.read_csv(file_path)
         print("Line 7")
-        styled = (
-            df.style
-            .apply(highlight_class, axis=0)
-            .set_table_attributes('class="dataframe-table"')
-        )
+        print("Line 7a")
+        print(df.columns.tolist())
+        try:
+            styled = (
+                df.style
+                .apply(highlight_class, axis=0)
+                .set_table_attributes('class="dataframe-table"')
+            )
+            print("Line 8")
+        except Exception as e:
+            print("STYLER ERROR:", repr(e))
+            raise
         print("Line 8")
         table_html = styled.to_html()
         print("Line 9")
