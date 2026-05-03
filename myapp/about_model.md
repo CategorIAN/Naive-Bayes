@@ -89,17 +89,35 @@ In summary, the model is trained using the code below:
 ```python
 @dataclass(frozen=True)
 class NaiveBayes:
-    n: int # Bin Size
-    alpha: float # Smoothing Parameter
+    """
+    Discrete Naive Bayes classifier with numeric feature binning.
+
+    Hyperparameters:
+        n: Number of bins used for numeric features.
+        alpha: Laplace/additive smoothing parameter.
+    """
+    n: int
+    alpha: float
 
     ...
 
     def __call__(self, data: Dataset) -> Callable[[pd.Series], object]:
-        binner = self.bin_map(data) # Create binning function.
-        binned_data = self.binned(binner, data) # Get binned data.
-        Q = self.getQ(binned_data) # Get class counts.
-        count_map = self.multi_count(binned_data) # Get class and feature value counts.
-        return partial(self.predict, binner, Q, count_map) # Function that inputs features and outputs predicted class
+        """
+        Train the model and return a classifier function.
+
+        This creates the learned objects needed for prediction:
+            - binner: feature transformation functions
+            - Q: class priors
+            - count_map: feature likelihood counts
+
+        Returns:
+            A function that maps one input row to a predicted class.
+        """
+        binner = self.bin_map(data)
+        binned_data = self.binned(binner, data)
+        Q = self.getQ(binned_data)
+        count_map = self.multi_count(binned_data)
+        return partial(self.predict, binner, Q, count_map)
 ```
 where `n` and `alpha` are our hyperparameters.
 

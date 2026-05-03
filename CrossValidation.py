@@ -12,11 +12,28 @@ from myapp.models import Prediction
 
 @dataclass(frozen=True)
 class CrossValidation:
+    """
+    Run grid-search cross-validation for the Naive Bayes model.
+
+    For each dataset, bin size, alpha, fold, and test-row index, this class:
+    - trains a Naive Bayes classifier on the corresponding training fold
+    - predicts one test example
+    - stores the result in the Prediction table
+
+    The prediction_index property defines a canonical ordering, which makes
+    the process resumable after interruption.
+    """
     data: Dataset
     bin_sizes: Sequence[int]
     alphas: Sequence[float]
 
     def partition(self) -> list[list[int]]:
+        """
+        Partition dataset row positions into 10 approximately equal folds.
+
+        The first r folds receive one extra row when the dataset size is not
+        divisible by 10.
+        """
         n = self.data.X.shape[0]
         (q, r) = (n // 10, n % 10)
 
@@ -28,6 +45,13 @@ class CrossValidation:
         return f(0, 0, [])
 
     def _train_test_dict(self) -> dict[int, tuple[Dataset, Dataset]]:
+        """
+        Build training/test Dataset pairs for each fold.
+
+        For fold i:
+        - test set = fold i
+        - training set = all other folds
+        """
         parts = self.partition()
         train = lambda i: self.data.filter([idx for j, fold in enumerate(parts) if j != i for idx in fold])
         test = lambda i: self.data.filter(parts[i])
@@ -35,10 +59,26 @@ class CrossValidation:
 
     @cached_property
     def train_test_dict(self):
+        """
+        Cached fold dictionary.
+
+        Cross-validation repeatedly reuses the same train/test splits, so this
+        avoids recomputing them for every prediction.
+        """
         return self._train_test_dict()
 
     @cached_property
     def prediction_index(self):
+        """
+        Canonical ordering of all predictions to create.
+
+        Each entry is:
+
+            (dataset_name, bin_size, alpha, fold_index, row_index)
+
+        This ordering allows first_missing_prediction() to resume from the
+        first prediction not yet stored in the database.
+        """
         return pd.Series([
             (self.data.name, bin_size, alpha, i, j)
             for bin_size in self.bin_sizes
@@ -48,6 +88,15 @@ class CrossValidation:
         ])
 
     def makePrediction(self, bin_size, alpha, i):
+        """
+        Train a classifier for one hyperparameter/fold combination.
+
+        Returns:
+            A function f(j) that predicts the j-th row of the test fold and
+            writes the prediction to the database.
+
+        This avoids retraining the model for every individual test row.
+        """
         model = NaiveBayes(bin_size, alpha)
         train, test = self.train_test_dict[i]
         classifier = model(train)
@@ -70,6 +119,12 @@ class CrossValidation:
         return f
 
     def first_missing_prediction(self):
+        """
+        Return the index of the first prediction not yet stored.
+
+        Existing database rows are loaded as keys so membership checks are fast.
+        Returns None if all predictions in prediction_index already exist.
+        """
         existing = set(Prediction.objects.values_list("dataset_name", "bin_size", "alpha", "test_set_index", "row_index"))
 
         for k, v in self.prediction_index.items():
@@ -79,6 +134,13 @@ class CrossValidation:
         return None
 
     def predict(self):
+        """
+        Continue prediction generation from the first missing database row.
+
+        The method walks through prediction_index in canonical order. A new
+        classifier is trained only when the tuple (bin_size, alpha, fold)
+        changes.
+        """
         k = self.first_missing_prediction()
         if k is None:
             return None
